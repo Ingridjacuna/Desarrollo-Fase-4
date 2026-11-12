@@ -485,3 +485,144 @@ class Reserva(Entidad):
             f"Duracion: {self.duracion} horas | "
             f"Estado: {self.estado}"
         )
+# ============================================================
+# 11. CLASE PRINCIPAL DEL SISTEMA SOFTWARE FJ
+# ============================================================
+
+class SistemaSoftwareFJ:
+
+    def __init__(self):
+
+        self.clientes = []
+        self.servicios = []
+        self.reservas = []
+
+        logger.info("Sistema Software FJ iniciado correctamente.")
+
+    # REGISTRO DE CLIENTES
+
+    def registrar_cliente(self, cliente):
+
+        if not isinstance(cliente, Cliente):
+            raise ValidacionError(
+                "El objeto ingresado no es un cliente."
+            )
+
+        if any(
+            c.identificacion == cliente.identificacion
+            for c in self.clientes
+        ):
+            raise ValidacionError(
+                "El cliente ya se encuentra registrado."
+            )
+
+        self.clientes.append(cliente)
+
+        logger.info(
+            f"Cliente registrado: {cliente.nombre}"
+        )
+
+        return True
+
+    # REGISTRO DE SERVICIOS
+
+    def registrar_servicio(self, servicio):
+
+        if not isinstance(servicio, Servicio):
+            raise ValidacionError(
+                "El objeto no corresponde a un servicio valido."
+            )
+
+        if any(
+            s.identificacion == servicio.identificacion
+            for s in self.servicios
+        ):
+            raise ValidacionError(
+                "El servicio ya se encuentra registrado."
+            )
+
+        self.servicios.append(servicio)
+
+        logger.info(
+            f"Servicio registrado: {servicio.nombre}"
+        )
+
+        return True
+
+    # CREACION DE RESERVAS
+
+    def crear_reserva(self, identificacion, cliente, servicio, duracion):
+
+        if not isinstance(cliente, Cliente) or cliente not in self.clientes:
+            raise ReservaError(
+                "El cliente no esta registrado."
+            )
+
+        if not isinstance(servicio, Servicio) or servicio not in self.servicios:
+            raise ReservaError(
+                "El servicio no esta registrado."
+            )
+
+        identificacion = str(identificacion)
+
+        if any(
+            r.identificacion == identificacion
+            for r in self.reservas
+        ):
+            raise ReservaError(
+                "El identificador de reserva ya existe."
+            )
+
+        reserva = Reserva(
+            identificacion,
+            cliente,
+            servicio,
+            duracion
+        )
+
+        self.reservas.append(reserva)
+
+        logger.info(
+            f"Reserva {identificacion} creada correctamente."
+        )
+
+        return reserva
+
+    # LISTADO DE CLIENTES
+
+    def listar_clientes(self):
+
+        print("\n========== LISTADO DE CLIENTES ==========")
+
+        if not self.clientes:
+            print("No hay clientes registrados.")
+            return
+
+        for cliente in self.clientes:
+            print(cliente.mostrar_informacion())
+
+    # LISTADO DE SERVICIOS
+
+    def listar_servicios(self):
+
+        print("\n========== LISTADO DE SERVICIOS ==========")
+
+        if not self.servicios:
+            print("No hay servicios registrados.")
+            return
+
+        for servicio in self.servicios:
+            print(servicio.describir_servicio())
+
+    # LISTADO DE RESERVAS
+
+    def listar_reservas(self):
+
+        print("\n========== LISTADO DE RESERVAS ==========")
+
+        if not self.reservas:
+            print("No hay reservas registradas.")
+            return
+
+        for reserva in self.reservas:
+            print(reserva.mostrar_informacion())
