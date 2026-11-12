@@ -167,3 +167,321 @@ class Cliente(Entidad):
             f"Correo: {self.correo} | "
             f"Telefono: {self.telefono}"
         )
+# ============================================================
+# 6. CLASE ABSTRACTA SERVICIO
+# ============================================================
+
+class Servicio(Entidad, ABC):
+
+    def __init__(
+        self,
+        identificacion,
+        nombre,
+        precio,
+        disponible=True
+    ):
+
+        super().__init__(identificacion)
+
+        if not isinstance(nombre, str) or not nombre.strip():
+            raise ValidacionError(
+                "El nombre del servicio es obligatorio."
+            )
+
+        validar_numero(precio, "precio")
+
+        if not isinstance(disponible, bool):
+            raise ValidacionError(
+                "La disponibilidad debe ser verdadera o falsa."
+            )
+
+        self.nombre = nombre.strip()
+        self.precio = float(precio)
+        self.disponible = disponible
+
+    @abstractmethod
+    def calcular_costo(self, duracion, impuestos=0.19, descuento=0):
+        pass
+
+    @abstractmethod
+    def describir_servicio(self):
+        pass
+
+    @abstractmethod
+    def validar_parametros(self, duracion):
+        pass
+
+    def mostrar_informacion(self):
+
+        return (
+            f"{self.nombre} | "
+            f"Precio base: ${self.precio:,.0f} | "
+            f"Disponible: {self.disponible}"
+        )
+
+
+# ============================================================
+# 7. SERVICIO: RESERVA DE SALAS
+# ============================================================
+
+class ReservaSala(Servicio):
+
+    def __init__(self, identificacion, precio_hora, capacidad):
+
+        super().__init__(
+            identificacion,
+            "Reserva de salas",
+            precio_hora
+        )
+
+        if not isinstance(capacidad, int) or isinstance(capacidad, bool) or capacidad <= 0:
+            raise ValidacionError(
+                "La capacidad debe ser un numero entero positivo."
+            )
+
+        self.capacidad = capacidad
+
+    def validar_parametros(self, duracion):
+
+        validar_numero(duracion, "duracion")
+        return True
+
+    def calcular_costo(self, duracion, impuestos=0.19, descuento=0):
+
+        self.validar_parametros(duracion)
+
+        if not 0 <= impuestos <= 1:
+            raise ValidacionError("Impuestos fuera del rango permitido.")
+
+        if not 0 <= descuento <= 1:
+            raise ValidacionError("Descuento fuera del rango permitido.")
+
+        subtotal = self.precio * duracion
+        subtotal_descuento = subtotal * (1 - descuento)
+
+        return subtotal_descuento * (1 + impuestos)
+
+    def describir_servicio(self):
+
+        return (
+            f"Reserva de salas | "
+            f"Capacidad: {self.capacidad} personas | "
+            f"Precio por hora: ${self.precio:,.0f}"
+        )
+
+
+# ============================================================
+# 8. SERVICIO: ALQUILER DE EQUIPOS
+# ============================================================
+
+class AlquilerEquipos(Servicio):
+
+    def __init__(self, identificacion, precio_hora, tipo_equipo):
+
+        super().__init__(
+            identificacion,
+            "Alquiler de equipos",
+            precio_hora
+        )
+
+        if not isinstance(tipo_equipo, str) or not tipo_equipo.strip():
+            raise ValidacionError(
+                "Debe especificar el tipo de equipo."
+            )
+
+        self.tipo_equipo = tipo_equipo.strip()
+
+    def validar_parametros(self, duracion):
+
+        validar_numero(duracion, "duracion")
+        return True
+
+    def calcular_costo(self, duracion, impuestos=0.19, descuento=0):
+
+        self.validar_parametros(duracion)
+
+        if not 0 <= impuestos <= 1 or not 0 <= descuento <= 1:
+            raise ValidacionError(
+                "Los impuestos y descuentos deben estar entre 0 y 1."
+            )
+
+        subtotal = self.precio * duracion
+        subtotal_descuento = subtotal * (1 - descuento)
+
+        return subtotal_descuento * (1 + impuestos)
+
+    def describir_servicio(self):
+
+        return (
+            f"Alquiler de equipos | "
+            f"Tipo: {self.tipo_equipo} | "
+            f"Precio por hora: ${self.precio:,.0f}"
+        )
+
+
+# ============================================================
+# 9. SERVICIO: ASESORIAS ESPECIALIZADAS
+# ============================================================
+
+class AsesoriaEspecializada(Servicio):
+
+    def __init__(self, identificacion, precio_hora, especialidad):
+
+        super().__init__(
+            identificacion,
+            "Asesorias especializadas",
+            precio_hora
+        )
+
+        if not isinstance(especialidad, str) or not especialidad.strip():
+            raise ValidacionError(
+                "La especialidad es obligatoria."
+            )
+
+        self.especialidad = especialidad.strip()
+
+    def validar_parametros(self, duracion):
+
+        validar_numero(duracion, "duracion")
+        return True
+
+    def calcular_costo(self, duracion, impuestos=0.19, descuento=0):
+
+        self.validar_parametros(duracion)
+
+        if not 0 <= impuestos <= 1 or not 0 <= descuento <= 1:
+            raise ValidacionError(
+                "Los impuestos y descuentos deben estar entre 0 y 1."
+            )
+
+        subtotal = self.precio * duracion
+        subtotal_descuento = subtotal * (1 - descuento)
+
+        return subtotal_descuento * (1 + impuestos)
+
+    def describir_servicio(self):
+
+        return (
+            f"Asesoria especializada | "
+            f"Especialidad: {self.especialidad} | "
+            f"Precio por hora: ${self.precio:,.0f}"
+        )
+
+
+# ============================================================
+# 10. CLASE RESERVA
+# ============================================================
+
+class Reserva(Entidad):
+
+    def __init__(self, identificacion, cliente, servicio, duracion):
+
+        super().__init__(identificacion)
+
+        if not isinstance(cliente, Cliente):
+            raise ValidacionError(
+                "Debe ingresar un cliente valido."
+            )
+
+        if not isinstance(servicio, Servicio):
+            raise ValidacionError(
+                "Debe ingresar un servicio valido."
+            )
+
+        validar_numero(duracion, "duracion")
+
+        self.cliente = cliente
+        self.servicio = servicio
+        self.duracion = duracion
+        self.estado = "Pendiente"
+        self.fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    def confirmar(self):
+
+        if self.estado != "Pendiente":
+            raise ReservaError(
+                "Solo se pueden confirmar reservas pendientes."
+            )
+
+        if not self.servicio.disponible:
+            raise ServicioNoDisponibleError(
+                "El servicio seleccionado no esta disponible."
+            )
+
+        self.servicio.validar_parametros(self.duracion)
+
+        self.estado = "Confirmada"
+
+        logger.info(
+            f"Reserva {self.identificacion} confirmada."
+        )
+
+        return True
+
+    def cancelar(self):
+
+        if self.estado not in ("Pendiente", "Confirmada"):
+            raise ReservaError(
+                "La reserva no puede cancelarse en su estado actual."
+            )
+
+        self.estado = "Cancelada"
+
+        logger.info(
+            f"Reserva {self.identificacion} cancelada."
+        )
+
+        return True
+
+    def procesar(self, impuestos=0.19, descuento=0):
+
+        try:
+
+            if self.estado != "Pendiente":
+                raise ReservaError(
+                    "La reserva no se encuentra pendiente."
+                )
+
+            if not self.servicio.disponible:
+                raise ServicioNoDisponibleError(
+                    "El servicio no esta disponible."
+                )
+
+            costo = self.servicio.calcular_costo(
+                self.duracion,
+                impuestos,
+                descuento
+            )
+
+        except SistemaError as error:
+
+            logger.exception(
+                f"Error procesando reserva {self.identificacion}"
+            )
+
+            raise
+
+        else:
+
+            logger.info(
+                f"Reserva {self.identificacion} procesada. "
+                f"Costo: ${costo:,.0f}"
+            )
+
+            return costo
+
+        finally:
+
+            print(
+                f"Proceso de reserva {self.identificacion} finalizado."
+            )
+
+    def mostrar_informacion(self):
+
+        return (
+            f"Reserva: {self.identificacion} | "
+            f"Cliente: {self.cliente.nombre} | "
+            f"Servicio: {self.servicio.nombre} | "
+            f"Duracion: {self.duracion} horas | "
+            f"Estado: {self.estado}"
+        )
