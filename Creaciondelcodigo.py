@@ -928,3 +928,88 @@ def main():
         "OPERACION 20: CALCULO DE COSTO CON IMPUESTO INVALIDO",
         lambda: sala.calcular_costo(2, 1.5, 0)
     )
+# ========================================================
+    # 14. INFORME FINAL DEL SISTEMA
+    # ========================================================
+
+    print("\n")
+    print("*" * 65)
+    print("             INFORME FINAL - SOFTWARE FJ")
+    print("*" * 65)
+
+    sistema.listar_clientes()
+
+    sistema.listar_servicios()
+
+    sistema.listar_reservas()
+
+    print("\n========== RESUMEN GENERAL ==========")
+
+    print(
+        f"Total de clientes registrados: "
+        f"{len(sistema.clientes)}"
+    )
+
+    print(
+        f"Total de servicios registrados: "
+        f"{len(sistema.servicios)}"
+    )
+
+    print(
+        f"Total de reservas registradas: "
+        f"{len(sistema.reservas)}"
+    )
+
+    confirmadas = sum(
+        1 for r in sistema.reservas
+        if r.estado == "Confirmada"
+    )
+
+    pendientes = sum(
+        1 for r in sistema.reservas
+        if r.estado == "Pendiente"
+    )
+
+    canceladas = sum(
+        1 for r in sistema.reservas
+        if r.estado == "Cancelada"
+    )
+
+    print(f"Reservas confirmadas: {confirmadas}")
+    print(f"Reservas pendientes: {pendientes}")
+    print(f"Reservas canceladas: {canceladas}")
+
+    print("\nArchivo de registro generado: software_fj.log")
+
+    logger.info(
+        "Ejecucion finalizada correctamente."
+    )
+
+    print("\n")
+    print("*" * 65)
+    print("       SISTEMA SOFTWARE FJ FINALIZADO CORRECTAMENTE")
+    print("*" * 65)
+
+
+# ============================================================
+# 15. PUNTO DE ENTRADA DEL PROGRAMA
+# ============================================================
+
+if __name__ == "__main__":
+
+    try:
+
+        main()
+
+    except Exception as error:
+
+        logger.critical(
+            f"Error critico durante la ejecucion: {error}",
+            exc_info=True
+        )
+
+        print(f"Se produjo un error critico: {error}")
+
+    finally:
+
+        print("\nEjecucion del programa terminada.")
